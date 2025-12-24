@@ -92,6 +92,23 @@
   </div>
 
 
+  <div class="card">
+    <h2>Today's Bake</h2>
+
+    <label>Name</label>
+    <input id="tName"/>
+
+    <label>Ingredients / Description</label>
+    <textarea id="tIngredients"></textarea>
+
+    <label>Today's Bake Image</label>
+    <input type="file" id="tImage"/>
+
+    <button onclick="saveToday()">Save Today’s Bake</button>
+    <p id="tmsg"></p>
+  </div>
+
+
   <!-- ================= ABOUT ================= -->
   <div class="card">
     <h2>Update About</h2>
@@ -283,6 +300,34 @@
 </tr>`;
     });
   }
+
+  async function saveToday(){
+    const name = tName.value;
+    const ingredients = tIngredients.value;
+    const file = tImage.files[0];
+
+    if(!file){
+      alert("Select image");
+      return;
+    }
+
+    const form = new FormData();
+    form.append("name", name);
+    form.append("ingredients", ingredients);
+    form.append("image", file);
+
+    const res = await fetch(`${API}/api/today`,{
+      method:"POST",
+      body: form
+    });
+
+    if(res.ok){
+      tmsg.innerHTML = "Today’s Bake Updated 🎉";
+    }else{
+      tmsg.innerHTML = "Failed";
+    }
+  }
+
 
 
   /* INIT */

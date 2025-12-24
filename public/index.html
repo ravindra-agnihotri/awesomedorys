@@ -172,6 +172,74 @@
             box-shadow:0 18px 40px rgba(0,0,0,.25);
         }
 
+        .today-popup {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            pointer-events: none;
+        }
+
+        .today-popup.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Popup Card */
+        .today-box {
+            background: #ffffff;
+            padding: 18px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            margin: 20px; /* Prevents touching screen edges on small devices */
+        }
+
+        /* Image styling - fixed and improved */
+        .today-box img {
+            width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            display: block; /* Removes bottom space under image */
+            height: auto; /* Maintains aspect ratio */
+        }
+
+        /* Optional: Add animation for smoother transitions */
+        @media (prefers-reduced-motion: no-preference) {
+            .today-popup {
+                transition: opacity 0.3s ease, visibility 0.3s ease;
+            }
+
+            .today-box {
+                transform: scale(0.95);
+                transition: transform 0.3s ease;
+                border-radius:26px;            /* smoother rounded edges */
+            }
+
+            .today-popup.active .today-box {
+                transform: scale(1);
+            }
+        }
+
+        /* Accessibility: Focus styles for keyboard navigation */
+        .today-popup:focus-within {
+            outline: 2px solid #4d90fe;
+            outline-offset: 2px;
+        }
+
+        /* Prevent background scroll when popup is active */
+        body.popup-active {
+            overflow: hidden;
+        }
+
         /* Dot indicators under products */
         .dots{
             text-align:center;
@@ -325,7 +393,7 @@
 
 
         .whatsapp-float{bottom:20px;right:20px;background:#25d366;}
-        .review-float{bottom:95px;right:20px;background:#ff9f43;}
+        .review-float{bottom:95px;right:20px;background: #ffde3e;}
 
         /* ----------------------------------
          MOBILE RESPONSIVE FIXES
@@ -352,6 +420,28 @@
             .logo{ font-size:26px; }
             nav a{ margin-left:10px; font-size:14px; }
         }
+        /* todays baked*/
+        .todays-bake-float{
+            position:fixed;
+            width:60px;
+            height:60px;
+            background: #503c1f;
+            color:white;
+            border-radius:50%;
+            bottom:170px;
+            right:20px;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            font-size:30px;
+            box-shadow:0 5px 12px rgba(0,0,0,.3);
+            cursor:pointer;
+            z-index:100;
+        }
+        .todays-bake-float:hover{
+            transform:scale(1.1);
+        }
+
 
 
     </style>
@@ -421,8 +511,17 @@
 </footer>
 
 <!-- Floating Buttons -->
-<a href="https://wa.me/919999999999" class="whatsapp-float" target="_blank">💬</a>
-<a class="review-float" onclick="openReviewPopup()">+</a>
+<a href="https://wa.me/919168445014" target="_blank" class="whatsapp-float" onclick="enquire()">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" width="36">
+</a>
+
+
+<a class="review-float" onclick="openReviewPopup()">⭐</a>
+<!-- Today’s Bake Floating Button -->
+<div class="todays-bake-float" onclick="openTodayBake()">
+    🍰
+</div>
+
 
 <!-- Image Popup -->
 <div class="image-popup" id="popup">
@@ -587,11 +686,87 @@
     }
 
     function enquire(name){
-        const phone = "919999999999";   // 🔥 replace with your WhatsApp number
+        const phone = "919168445014";
         const msg = `Hi, I would like to enquire about ${name}`;
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
         window.open(url,"_blank");
     }
+
+    function enquire(){
+        const phone = "919168445014";
+        const msg = `Hi there! I’d love to chat with you about cakes :)`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+        window.open(url,"_blank");
+    }
+
+    async function openTodayBake() {
+
+        console.log("Opening Today’s Bake…");
+
+        const res = await fetch(`${API}/api/today`);
+        const data = await res.json();
+        console.log("Today API Response:", data);
+
+        // API supports array or single object
+        const today = Array.isArray(data) ? data[0] : data;
+
+        if (!today) {
+            alert("No Today Bake Added Yet");
+            return;
+        }
+
+        // Safe Cloudinary handling
+        let imgUrl = today.imageUrl;
+        if (imgUrl?.includes("/upload/")) {
+            imgUrl = imgUrl.replace("/upload/", "/upload/f_auto,q_auto/");
+        }
+
+        document.getElementById("todayImg").src = imgUrl || "";
+        document.getElementById("todayName").innerText = today.name || "Today's Special";
+
+        // 👇 THIS WAS MISSING EARLIER
+        document.getElementById("todayDesc").innerText =
+            today.description || "";
+
+        document.getElementById("todayIngr").innerText =
+            today.ingredients ? "Ingredients: " + today.ingredients : "";
+
+        document.getElementById("todayPopup").classList.add("active");
+    }
+
+
+    // Close when clicking background
+    document.getElementById("todayPopup").addEventListener("click", () => {
+        document.getElementById("todayPopup").classList.remove("active");
+    });
+
+    // Do NOT close when clicking popup box
+    document.querySelector(".today-box")
+        .addEventListener("click", e => e.stopPropagation());
+
+    // click inside should NOT close
+    document.querySelector(".today-box")
+        .addEventListener("click", e => e.stopPropagation());
+
+    function closeToday(){
+        document.getElementById("todayPopup").classList.remove("active");
+    }
+
+
+    document.querySelector(".today-box")
+        .addEventListener("click", e => e.stopPropagation());
+
+    /* CLOSE TODAY POPUP WHEN CLICKING OUTSIDE BOX */
+        document.getElementById("todayPopup").addEventListener("click", function () {
+        closeToday();
+    });
+
+        /* PREVENT closing when clicking the popup box itself */
+        document.querySelector(".today-box").addEventListener("click", function (e) {
+        e.stopPropagation();
+    });
+</script>
+
 
 </script>
 <!-- REVIEW POPUP -->
@@ -617,7 +792,16 @@
 
     </div>
 </div>
-
+<!-- TODAY'S BAKED POPUP -->
+<div id="todayPopup" class="today-popup">
+    <div class="today-box">
+        <img id="todayImg">
+        <h3 id="todayName"></h3>
+        <p id="todayDesc"></p>
+        <p id="todayIngr" style="color:#555;font-size:14px"></p>
+        <button onclick="closeToday()">Close</button>
+    </div>
+</div>
 
 </body>
 </html>

@@ -27,6 +27,10 @@ const PRODUCT_JSON = path.join(DATA_DIR, "products.json");
 const GALLERY_JSON = path.join(DATA_DIR, "gallery.json");
 const REVIEW_JSON = path.join(DATA_DIR, "reviews.json");
 const ABOUT_JSON = path.join(DATA_DIR, "about.json");
+const TODAY_JSON = path.join(DATA_DIR, "today.json");
+if(!fs.existsSync(TODAY_JSON)) fs.writeFileSync(TODAY_JSON, "[]");
+
+
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
@@ -56,6 +60,8 @@ const storage = new CloudinaryStorage({
     params: async (req, file) => {
         let folder = "dory-products";
         if (req.url.includes("gallery")) folder = "dory-gallery";
+        if (req.url.includes("today")) folder = "dory-today";
+
 
         return {
             folder,
@@ -63,6 +69,15 @@ const storage = new CloudinaryStorage({
         };
     }
 });
+const todayStorage = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: "dory-today",
+        resource_type: "image"
+    }
+});
+const uploadToday = multer({ storage: todayStorage });
+
 
 const upload = multer({ storage });
 
@@ -151,6 +166,39 @@ app.delete("/api/gallery/:id", (req, res) => {
     res.json({ message: "Image Deleted" });
 });
 
+/*======================todays baked======================
+
+--------------------------================================== */
+app.get("/api/today", (req,res)=>{
+    try{
+        const data = JSON.parse(fs.readFileSync(TODAY_JSON));
+        res.json(data);
+    }catch{
+        res.json(null);
+    }
+});
+app.post("/api/today", uploadToday.single("image"), (req,res)=>{
+
+    if(!req.file){
+        return res.status(400).json({message:"Image required"});
+    }
+
+    const today = {
+        id: Date.now(),
+        name: req.body.name,
+        ingredients: req.body.ingredients,
+        imageUrl: req.file.path // CLOUDINARY URL 🎉
+    };
+
+    fs.writeFileSync(TODAY_JSON, JSON.stringify(today,null,2));
+
+    res.json(today);
+});
+app.delete("/api/today",(req,res)=>{
+    fs.writeFileSync(TODAY_JSON,"null");
+    res.json({message:"Today Bake Cleared"});
+});
+
 /* =========================================================
                       REVIEWS
 ========================================================= */
@@ -194,6 +242,28 @@ app.post("/api/about", (req, res) => {
     writeJSON(ABOUT_JSON, data);
     res.json({ message: "About Updated", data });
 });
+
+app.get("/api/today",(req,res)=>{
+    res.json(readJSON(TODAY_JSON));
+});
+
+app.post("/api/today", upload.single("image"), (req,res)=>{
+    const list = readJSON(TODAY_JSON);
+
+    const today = {
+        id: Date.now(),
+        name: req.body.name,
+        description: req.body.description,
+        imageUrl: req.file.path
+    };
+
+    list.length = 0;         // always keep ONLY latest
+    list.push(today);
+
+    writeJSON(TODAY_JSON, list);
+    res.json(today);
+});
+
 
 /* =========================================================
                       ROUTES
