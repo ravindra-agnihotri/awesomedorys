@@ -459,7 +459,7 @@
 
         products.forEach(p=>{
             const img = p.imageUrl
-                ? API + (p.imageUrl.startsWith("/")?p.imageUrl:`/${p.imageUrl}`)
+                ? p.imageUrl.replace("/upload/", "/upload/f_auto,q_auto/")
                 : "https://via.placeholder.com/300x220";
 
             productList.innerHTML += `
@@ -503,7 +503,7 @@
         }
 
         data.forEach(g=>{
-            const img = API + (g.url.startsWith("/")?g.url:`/${g.url}`);
+            const img = g.url.replace("/upload/", "/upload/f_auto,q_auto/");
             galleryBox.innerHTML+=`<img src="${img}" onclick="showImg('${img}')">`;
         });
     }

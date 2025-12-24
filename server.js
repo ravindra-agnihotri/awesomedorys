@@ -1,140 +1,165 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const multer = require("multer");
 const cors = require("cors");
+const multer = require("multer");
+
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ---------- STATIC FRONTEND ----------
+// ================= CLOUDINARY =================
+cloudinary.config({
+    cloud_name: "ddxncyyhh",
+    api_key: "741968644895871",
+    api_secret: "G6Aqnv0cv4FgJBr4-MtYxwUnVtM"
+});
+
+// ================= STATIC =================
 app.use(express.static("public"));
 
-// ---------- SERVE IMAGES ----------
-app.use("/uploads", express.static("uploads"));
-
-// ---------- FOLDERS ----------
+// ================= DATA FILES =================
 const DATA_DIR = "data";
 const PRODUCT_JSON = path.join(DATA_DIR, "products.json");
 const GALLERY_JSON = path.join(DATA_DIR, "gallery.json");
 const REVIEW_JSON = path.join(DATA_DIR, "reviews.json");
 const ABOUT_JSON = path.join(DATA_DIR, "about.json");
 
-if(!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
-if(!fs.existsSync(PRODUCT_JSON)) fs.writeFileSync(PRODUCT_JSON, "[]");
-if(!fs.existsSync(GALLERY_JSON)) fs.writeFileSync(GALLERY_JSON, "[]");
-if(!fs.existsSync(REVIEW_JSON)) fs.writeFileSync(REVIEW_JSON, "[]");
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
 
-if(!fs.existsSync(ABOUT_JSON)) fs.writeFileSync(
-    ABOUT_JSON,
-    JSON.stringify({
-        title:"About Dory's Bakehouse",
-        description:"At Dory’s Bakehouse, every cake is baked with love, passion, and premium ingredients.",
-        description2:"Freshly prepared, beautifully decorated, and irresistibly delicious – crafted to bring smiles."
-    }, null, 2)
-);
+if (!fs.existsSync(PRODUCT_JSON)) fs.writeFileSync(PRODUCT_JSON, "[]");
+if (!fs.existsSync(GALLERY_JSON)) fs.writeFileSync(GALLERY_JSON, "[]");
+if (!fs.existsSync(REVIEW_JSON)) fs.writeFileSync(REVIEW_JSON, "[]");
 
-const PRODUCT_DIR = "uploads/products";
-const GALLERY_DIR = "uploads/gallery";
+if (!fs.existsSync(ABOUT_JSON))
+    fs.writeFileSync(
+        ABOUT_JSON,
+        JSON.stringify(
+            {
+                title: "About Dory's Bakehouse",
+                description:
+                    "At Dory’s Bakehouse, every cake is baked with love, passion, and premium ingredients.",
+                description2:
+                    "Freshly prepared, beautifully decorated, and irresistibly delicious – crafted to bring smiles."
+            },
+            null,
+            2
+        )
+    );
 
-[PRODUCT_DIR, GALLERY_DIR].forEach(dir => {
-    if(!fs.existsSync(dir)) fs.mkdirSync(dir, {recursive:true});
-});
+// ================= CLOUDINARY STORAGE =================
+const storage = new CloudinaryStorage({
+    cloudinary,
+    params: async (req, file) => {
+        let folder = "dory-products";
+        if (req.url.includes("gallery")) folder = "dory-gallery";
 
-// ---------- MULTER ----------
-const storage = multer.diskStorage({
-    destination:(req,file,cb)=>{
-        if(req.url.includes("gallery")) cb(null, GALLERY_DIR);
-        else cb(null, PRODUCT_DIR);
-    },
-    filename:(req,file,cb)=>{
-        cb(null, Date.now() + "_" + file.originalname);
+        return {
+            folder,
+            resource_type: "image"
+        };
     }
 });
-const upload = multer({storage});
 
-// ---------- UTILS ----------
-const readJSON = file => JSON.parse(fs.readFileSync(file));
-const writeJSON = (file,data) => fs.writeFileSync(file, JSON.stringify(data,null,2));
+const upload = multer({ storage });
 
+// ================= UTIL HELPERS =================
+const readJSON = (file) => JSON.parse(fs.readFileSync(file));
+const writeJSON = (file, data) =>
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-// ======================= PRODUCTS =======================
-app.get("/api/products",(req,res)=>{
+/* =========================================================
+                      PRODUCTS
+========================================================= */
+
+app.get("/api/products", (req, res) => {
     res.json(readJSON(PRODUCT_JSON));
 });
 
-app.post("/api/products", upload.single("image"), (req,res)=>{
+app.post("/api/products", upload.single("image"), (req, res) => {
+    try {
+        if (!req.file)
+            return res.status(400).json({ error: "Product image required" });
 
-    if(!req.file){
-        return res.status(400).json({message:"Image is required"});
+        const list = readJSON(PRODUCT_JSON);
+        const id = list.length ? list[list.length - 1].id + 1 : 1;
+
+        const product = {
+            id,
+            name: req.body.name,
+            price: req.body.price,
+            description: req.body.description,
+            imageUrl: req.file.secure_url || req.file.path
+        };
+
+        list.push(product);
+        writeJSON(PRODUCT_JSON, list);
+
+        res.json(product);
+    } catch (err) {
+        console.error("PRODUCT ERROR:", err);
+        res.status(500).json({ error: err.message });
     }
-
-    const list = readJSON(PRODUCT_JSON);
-    const id = list.length ? list[list.length-1].id + 1 : 1;
-
-    const product = {
-        id,
-        name: req.body.name,
-        price: req.body.price,
-        description: req.body.description,
-        imageUrl: "/uploads/products/" + req.file.filename
-    };
-
-    list.push(product);
-    writeJSON(PRODUCT_JSON, list);
-
-    res.json(product);
 });
 
-app.delete("/api/products/:id",(req,res)=>{
+app.delete("/api/products/:id", (req, res) => {
     let list = readJSON(PRODUCT_JSON);
-    list = list.filter(p => p.id != req.params.id);
+    list = list.filter((p) => p.id != req.params.id);
     writeJSON(PRODUCT_JSON, list);
-    res.json({message:"Product Deleted"});
+    res.json({ message: "Product Deleted" });
 });
 
+/* =========================================================
+                      GALLERY
+========================================================= */
 
-// ======================= GALLERY =======================
-app.get("/api/gallery",(req,res)=>{
+app.get("/api/gallery", (req, res) => {
     res.json(readJSON(GALLERY_JSON));
 });
 
-app.post("/api/gallery", upload.array("files"), (req,res)=>{
+app.post("/api/gallery", upload.array("files"), (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0)
+            return res.status(400).json({ message: "No files uploaded" });
 
-    if(!req.files || req.files.length === 0){
-        return res.status(400).json({message:"No files uploaded"});
-    }
+        const list = readJSON(GALLERY_JSON);
+        let lastId = list.length ? list[list.length - 1].id : 0;
 
-    const list = readJSON(GALLERY_JSON);
-    let lastId = list.length ? list[list.length-1].id : 0;
-
-    req.files.forEach(file=>{
-        lastId++;
-        list.push({
-            id:lastId,
-            url: "/uploads/gallery/" + file.filename
+        req.files.forEach((file) => {
+            lastId++;
+            list.push({
+                id: lastId,
+                url: file.path // CLOUDINARY DIRECT URL
+            });
         });
-    });
 
-    writeJSON(GALLERY_JSON, list);
-    res.json(list);
+        writeJSON(GALLERY_JSON, list);
+        res.json(list);
+    } catch (err) {
+        console.error("GALLERY ERROR:", err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.delete("/api/gallery/:id",(req,res)=>{
+app.delete("/api/gallery/:id", (req, res) => {
     let list = readJSON(GALLERY_JSON);
-    list = list.filter(g => g.id != req.params.id);
+    list = list.filter((g) => g.id != req.params.id);
     writeJSON(GALLERY_JSON, list);
-    res.json({message:"Image Deleted"});
+    res.json({ message: "Image Deleted" });
 });
 
+/* =========================================================
+                      REVIEWS
+========================================================= */
 
-// ======================= REVIEWS =======================
-app.get("/api/reviews",(req,res)=>{
+app.get("/api/reviews", (req, res) => {
     res.json(readJSON(REVIEW_JSON));
 });
 
-app.post("/api/reviews",(req,res)=>{
+app.post("/api/reviews", (req, res) => {
     const list = readJSON(REVIEW_JSON);
 
     const review = {
@@ -148,36 +173,44 @@ app.post("/api/reviews",(req,res)=>{
     list.unshift(review);
     writeJSON(REVIEW_JSON, list);
 
-    res.json({success:true, review});
+    res.json({ success: true, review });
 });
 
+/* =========================================================
+                      ABOUT
+========================================================= */
 
-// ======================= ABOUT =======================
-app.get("/api/about",(req,res)=>{
+app.get("/api/about", (req, res) => {
     res.json(readJSON(ABOUT_JSON));
 });
 
-app.post("/api/about",(req,res)=>{
+app.post("/api/about", (req, res) => {
     const data = {
         title: req.body.title,
         description: req.body.description,
         description2: req.body.description2
     };
+
     writeJSON(ABOUT_JSON, data);
-    res.json({message:"About Updated", data});
+    res.json({ message: "About Updated", data });
 });
 
+/* =========================================================
+                      ROUTES
+========================================================= */
 
-// ======================= ROUTES =======================
-app.get("/", (req,res)=>{
+app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-app.get("/admin", (req,res)=>{
+app.get("/admin", (req, res) => {
     res.sendFile(path.join(__dirname, "public/admin.html"));
 });
 
-
-// ======================= START =======================
+/* =========================================================
+                      START SERVER
+========================================================= */
 const PORT = 8080;
-app.listen(PORT, ()=> console.log("Backend running on http://localhost:" + PORT));
+app.listen(PORT, () =>
+    console.log("Backend Running → http://localhost:" + PORT)
+);

@@ -1,51 +1,37 @@
 [
   {
     "id": 1,
-    "name": "aa",
-    "price": "121",
-    "description": "",
-    "imageUrl": "/uploads/products/1766572153924_Screenshot 2025-12-24 at 1.36.14â¯AM.png"
+    "name": "Cake One",
+    "price": "12123",
+    "description": "good cake",
+    "imageUrl": "https://res.cloudinary.com/ddxncyyhh/image/upload/v1766603517/dory-products/dnpnntsygou3k47yakux.jpg"
   },
   {
     "id": 2,
-    "name": "sd",
-    "price": "23",
-    "description": "asd",
-    "imageUrl": "/uploads/products/1766578074273_IMG_3044.HEIC"
+    "name": "Cake Two",
+    "price": "12123",
+    "description": "good cake",
+    "imageUrl": "https://res.cloudinary.com/ddxncyyhh/image/upload/v1766603534/dory-products/eaem4okws9o7u1ocisww.heic"
   },
   {
     "id": 3,
-    "name": "sdwqe",
-    "price": "23",
-    "description": "asd",
-    "imageUrl": "/uploads/products/1766578077540_IMG_3044.HEIC"
+    "name": "Cake Three",
+    "price": "12123",
+    "description": "good cake",
+    "imageUrl": "https://res.cloudinary.com/ddxncyyhh/image/upload/v1766603578/dory-products/knss6rvucoju3pisk6cp.heic"
   },
   {
     "id": 4,
-    "name": "sdwqeqw",
-    "price": "23",
-    "description": "asd",
-    "imageUrl": "/uploads/products/1766578080064_IMG_3044.HEIC"
+    "name": "Cake Four",
+    "price": "12123",
+    "description": "good cake",
+    "imageUrl": "https://res.cloudinary.com/ddxncyyhh/image/upload/v1766603595/dory-products/ubzh49o1zc6m99czrmpo.heic"
   },
   {
     "id": 5,
-    "name": "qwesdwqeqw",
-    "price": "23",
-    "description": "asd",
-    "imageUrl": "/uploads/products/1766578082951_IMG_3044.HEIC"
-  },
-  {
-    "id": 6,
-    "name": "qwesdwqeqw",
-    "price": "2123",
-    "description": "asd",
-    "imageUrl": "/uploads/products/1766578085716_IMG_3044.HEIC"
-  },
-  {
-    "id": 7,
-    "name": "qwesdwqeqwqw",
-    "price": "2123",
-    "description": "asd",
-    "imageUrl": "/uploads/products/1766578088520_IMG_3044.HEIC"
+    "name": "Cake Five",
+    "price": "12123",
+    "description": "good cake",
+    "imageUrl": "https://res.cloudinary.com/ddxncyyhh/image/upload/v1766603616/dory-products/zzsvpk9kp87un7tdzgra.heic"
   }
 ]
