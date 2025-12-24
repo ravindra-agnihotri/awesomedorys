@@ -1,0 +1,51 @@
+[
+  {
+    "id": 1,
+    "name": "aa",
+    "price": "121",
+    "description": "",
+    "imageUrl": "/uploads/products/1766572153924_Screenshot 2025-12-24 at 1.36.14â¯AM.png"
+  },
+  {
+    "id": 2,
+    "name": "sd",
+    "price": "23",
+    "description": "asd",
+    "imageUrl": "/uploads/products/1766578074273_IMG_3044.HEIC"
+  },
+  {
+    "id": 3,
+    "name": "sdwqe",
+    "price": "23",
+    "description": "asd",
+    "imageUrl": "/uploads/products/1766578077540_IMG_3044.HEIC"
+  },
+  {
+    "id": 4,
+    "name": "sdwqeqw",
+    "price": "23",
+    "description": "asd",
+    "imageUrl": "/uploads/products/1766578080064_IMG_3044.HEIC"
+  },
+  {
+    "id": 5,
+    "name": "qwesdwqeqw",
+    "price": "23",
+    "description": "asd",
+    "imageUrl": "/uploads/products/1766578082951_IMG_3044.HEIC"
+  },
+  {
+    "id": 6,
+    "name": "qwesdwqeqw",
+    "price": "2123",
+    "description": "asd",
+    "imageUrl": "/uploads/products/1766578085716_IMG_3044.HEIC"
+  },
+  {
+    "id": 7,
+    "name": "qwesdwqeqwqw",
+    "price": "2123",
+    "description": "asd",
+    "imageUrl": "/uploads/products/1766578088520_IMG_3044.HEIC"
+  }
+]

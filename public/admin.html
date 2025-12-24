@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dory Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+  <style>
+    body{font-family:Arial;background:#f6efe4;margin:0}
+    header{background:#673f16;color:#fff;padding:15px;font-size:22px}
+    .container{padding:25px}
+    .card{background:#fff;padding:20px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,.1);margin-bottom:25px}
+    label{font-weight:600}
+    input,textarea{width:100%;padding:8px;margin-top:5px;border:1px solid #ccc;border-radius:6px}
+    button{background:#673f16;color:#fff;border:none;padding:10px 18px;border-radius:8px;margin-top:10px;cursor:pointer}
+    button:hover{background:#84522b}
+    table{width:100%;border-collapse:collapse;margin-top:15px}
+    th,td{padding:10px;border-bottom:1px solid #ddd}
+    img{width:70px;height:70px;border-radius:8px;object-fit:cover}
+    .delete-btn{background:red}
+  </style>
+</head>
+
+<body>
+
+<header>Dory's Admin Panel</header>
+
+<div class="container">
+
+
+  <!-- ================= PRODUCTS ================= -->
+  <div class="card">
+    <h2>Add Product</h2>
+
+    <label>Name</label>
+    <input id="productName"/>
+
+    <label>Price</label>
+    <input id="productPrice" type="number"/>
+
+    <label>Description</label>
+    <textarea id="productDescription"></textarea>
+
+    <label>Product Image</label>
+    <input type="file" id="productImage"/>
+
+    <button onclick="saveProduct()">Save Product</button>
+    <p id="pmsg"></p>
+  </div>
+
+
+  <div class="card">
+    <h2>Products</h2>
+    <table>
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Image</th>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Description</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody id="productBody"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>About Us Content</h2>
+
+    <label>Title</label>
+    <input id="aboutTitle"/>
+
+    <label>Line 1</label>
+    <textarea id="aboutDesc1"></textarea>
+
+    <label>Line 2</label>
+    <textarea id="aboutDesc2"></textarea>
+
+    <button onclick="saveAbout()">Save About Section</button>
+    <p id="amsg"></p>
+  </div>
+
+
+  <!-- ================= GALLERY ================= -->
+  <div class="card">
+    <h2>Upload Gallery Images (Multiple)</h2>
+
+    <input type="file" id="galleryFiles" multiple />
+    <button onclick="uploadGallery()">Upload</button>
+
+    <p id="gmsg"></p>
+  </div>
+
+
+  <div class="card">
+    <h2>Gallery Images</h2>
+    <table>
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Image</th>
+        <th>Action</th>
+      </tr>
+      </thead>
+      <tbody id="galleryBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+
+  const API = "http://localhost:8080";
+
+  // ================= SAVE PRODUCT =================
+  function saveProduct() {
+    const name = productName.value;
+    const price = productPrice.value;
+    const desc = productDescription.value;
+    const file = productImage.files[0];
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("price", price);
+    formData.append("description", desc);
+    formData.append("image", file);
+
+    fetch(API + "/api/products", {
+      method: "POST",
+      body: formData
+    })
+            .then(r => r.json())
+            .then(res => {
+              pmsg.innerHTML = "Product Saved 🎉";
+              loadProducts();
+            })
+            .catch(err => console.error("ERROR", err));
+  }
+
+
+  // ================= LOAD PRODUCTS =================
+  async function loadProducts(){
+    const res = await fetch(API + "/api/products");
+    const list = await res.json();
+
+    const body = document.getElementById("productBody");
+    body.innerHTML="";
+
+    list.forEach((p,i)=>{
+
+      let img = p.imageUrl
+              ? (p.imageUrl.startsWith("http")
+                      ? p.imageUrl
+                      : API + (p.imageUrl.startsWith("/")?p.imageUrl:"/"+p.imageUrl))
+              : "https://via.placeholder.com/70";
+
+      body.innerHTML += `
+ <tr>
+ <td>${i+1}</td>
+ <td><img src="${img}"></td>
+ <td>${p.name||""}</td>
+ <td>${p.price||""}</td>
+ <td>${p.description||""}</td>
+ <td><button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button></td>
+ </tr>`;
+    });
+
+  }
+
+
+  // ================= DELETE PRODUCT =================
+  async function deleteProduct(id){
+    if(!confirm("Delete product?")) return;
+
+    await fetch(API + "/api/products/" + id,{
+      method:"DELETE"
+    });
+
+    loadProducts();
+  }
+
+
+  // ================= UPLOAD GALLERY =================
+  async function uploadGallery(){
+    let files = galleryFiles.files;
+
+    if(!files.length){
+      alert("Select files");
+      return;
+    }
+
+    const form = new FormData();
+    for(let f of files){
+      form.append("files", f);
+    }
+
+    const res = await fetch(API + "/api/gallery", {
+      method:"POST",
+      body:form
+    });
+
+    if(res.ok){
+      gmsg.innerHTML="Uploaded 🎉";
+      loadGallery();
+    }else{
+      gmsg.innerHTML="Upload Failed";
+    }
+  }
+
+
+  // ================= LOAD GALLERY =================
+  async function loadGallery(){
+    try{
+      const res = await fetch(API + "/api/gallery");
+      const imgs = await res.json();
+
+      const body = document.getElementById("galleryBody");
+      body.innerHTML = "";
+
+      if(!Array.isArray(imgs) || imgs.length === 0){
+        body.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#777">
+        No gallery images uploaded yet
+      </td></tr>`;
+        return;
+      }
+
+      imgs.forEach((g,i)=>{
+
+        let img = g.url.startsWith("http")
+                ? g.url
+                : API + (g.url.startsWith("/") ? g.url : "/" + g.url);
+
+        body.innerHTML += `
+        <tr>
+          <td>${i+1}</td>
+          <td><img src="${img}"></td>
+          <td>
+            <button class="delete-btn" onclick="deleteGallery(${g.id})">
+              Delete
+            </button>
+          </td>
+        </tr>`;
+      });
+
+    }catch(e){
+      console.log("Gallery Load Failed", e);
+    }
+  }
+
+
+  // ================= DELETE GALLERY IMAGE =================
+  async function deleteGallery(id){
+    if(!confirm("Delete image?")) return;
+
+    await fetch(API + "/api/gallery/" + id,{
+      method:"DELETE"
+    });
+
+    loadGallery();
+  }
+
+
+  // ================= INIT =================
+  loadProducts();
+  loadGallery();
+
+  async function loadAbout(){
+    const res = await fetch(API + "/api/about");
+    const a = await res.json();
+
+    aboutTitle.value = a.title || "";
+    aboutDesc1.value = a.description || "";
+    aboutDesc2.value = a.description2 || "";
+  }
+
+  async function saveAbout(){
+    const body = {
+      title: aboutTitle.value,
+      description: aboutDesc1.value,
+      description2: aboutDesc2.value
+    };
+
+    const res = await fetch(API + "/api/about",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(body)
+    });
+
+    if(res.ok){
+      amsg.innerHTML = "About Section Updated 🎉";
+    }else{
+      amsg.innerHTML = "Failed to update";
+    }
+  }
+
+
+</script>
+
+</body>
+</html>

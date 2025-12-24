@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Dory's Bakehouse</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+
+        /* ----------------------------------
+         GLOBAL STYLES
+        ---------------------------------- */
+        *{margin:0;padding:0;box-sizing:border-box}
+
+
+        body{
+            font-family:'Poppins',sans-serif;
+            background: rgba(255, 236, 207, 0.45);
+            color:#333;
+        }
+
+        /* ----------------------------------
+         HEADER
+        ---------------------------------- */
+        header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:20px 40px;
+            background:white;
+            box-shadow:0 3px 12px rgba(0,0,0,.08);
+            position:sticky;
+            top:0;
+            z-index:10;
+        }
+        .logo{
+            font-family:'Great Vibes',cursive;
+            font-size:36px;
+            color:#673f16;
+        }
+        nav a{
+            margin-left:20px;
+            text-decoration:none;
+            color:#555;
+            font-weight:500;
+        }
+
+        /* ----------------------------------
+         HERO BANNER
+        ---------------------------------- */
+        .hero{
+            height:565px;
+            border-radius:16px;
+            margin:20px;
+            position:relative;
+            overflow:hidden;
+            background:url('./dorys.png') center/cover no-repeat;
+            box-shadow:0 10px 30px rgba(0,0,0,.25);
+            animation: heroZoom 15s infinite ease-in-out;
+        }
+        @keyframes heroZoom{
+            0%{ transform:scale(1); }
+            50%{ transform:scale(1.06); }
+            100%{ transform:scale(1); }
+        }
+        .hero::after{
+            content:"";
+            position:absolute;
+            inset:0;
+            background:linear-gradient(to bottom,rgba(0,0,0,.4),rgba(0,0,0,.7));
+        }
+
+        /* ----------------------------------
+         SECTION BASE
+        ---------------------------------- */
+        section{padding:60px 40px;}
+        h2{text-align:center;margin-bottom:30px;color:#673f16;font-size:30px;}
+
+        /* ----------------------------------
+         ABOUT SECTION
+        ---------------------------------- */
+        .about-box{
+            display:flex;
+            gap:25px;
+            align-items:center;
+            background:white;
+            padding:25px;
+            border-radius:16px;
+            box-shadow:0 8px 25px rgba(0,0,0,.12);
+        }
+        .about-right img{
+            width:330px;
+            height:250px;
+            object-fit:cover;
+            border-radius:14px;
+        }
+
+        /* ----------------------------------
+         PRODUCT CAROUSEL
+        ---------------------------------- */
+
+        /* Wrapper holds arrows + product strip */
+        .product-wrapper{
+            position:relative;
+            display:flex;
+            align-items:center;
+        }
+
+        /* Product horizontal scroll container */
+        .products{
+            display:flex;
+            gap:20px;
+            overflow-x:auto;
+            padding:10px 5px;
+            scroll-snap-type:x mandatory;
+            scroll-behavior:smooth;
+        }
+
+        /* Scrollbar styling */
+        .products::-webkit-scrollbar{
+            height:8px;
+        }
+        .products::-webkit-scrollbar-thumb{
+            background:#673f16;
+            border-radius:30px;
+        }
+
+        /* Scroll arrows */
+        .scroll-btn{
+            position:absolute;
+            top:50%;
+            transform:translateY(-50%);
+            z-index:10;
+            background:white;
+            border:none;
+            width:40px;
+            height:40px;
+            border-radius:50%;
+            font-size:22px;
+            cursor:pointer;
+            box-shadow:0 5px 15px rgba(0,0,0,.2);
+        }
+        .scroll-btn:hover{
+            background:#673f16;
+            color:white;
+        }
+        .left{ left:-10px; }
+        .right{ right:-10px; }
+
+        /* Product cards */
+        .card{
+            width:280px;
+            flex:0 0 auto;
+            scroll-snap-align:center;
+            background:white;
+            border-radius:16px;
+            padding:12px;
+            box-shadow:0 5px 20px rgba(0,0,0,.08);
+            transition:transform .35s cubic-bezier(.19,1,.22,1),
+            box-shadow .35s ease;
+        }
+        .card img{
+            width:100%;
+            height:220px;
+            object-fit:cover;
+            border-radius:12px;
+        }
+        .card:hover{
+            transform:translateY(-8px) scale(1.05);
+            box-shadow:0 18px 40px rgba(0,0,0,.25);
+        }
+
+        /* Dot indicators under products */
+        .dots{
+            text-align:center;
+            margin-bottom:10px;
+        }
+        .dots span{
+            display:inline-block;
+            width:10px;
+            height:10px;
+            border-radius:50%;
+            margin:6px;
+            background:#ccc;
+            transition:.3s;
+        }
+        .dots .active{
+            background:#673f16;
+            width:22px;
+            border-radius:20px;
+        }
+
+        /* ----------------------------------
+         GALLERY (horizontal mobile scroll)
+        ---------------------------------- */
+        .gallery{
+            display:flex;
+            gap:14px;
+            overflow-x:auto;
+            scroll-snap-type:x mandatory;
+        }
+        .gallery img{
+            width:260px;
+            height:220px;
+            border-radius:14px;
+            object-fit:cover;
+            scroll-snap-align:center;
+        }
+        .gallery::-webkit-scrollbar{
+            height:6px;
+        }
+
+        /* ----------------------------------
+         REVIEWS
+        ---------------------------------- */
+        .review-container{
+            display:flex;
+            gap:22px;
+            overflow-x:auto;
+        }
+        .review-card{
+            min-width:300px;
+            background:#fff7e6;
+            padding:20px;
+            border-radius:14px;
+        }
+
+        /* ----------------------------------
+         IMAGE POPUP
+        ---------------------------------- */
+        .image-popup{
+            position:fixed; inset:0;
+            background:rgba(0,0,0,.85);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            visibility:hidden;
+            opacity:0;
+            transition:.3s;
+        }
+        .image-popup.active{
+            visibility:visible;
+            opacity:1;
+        }
+        .image-popup img{
+            max-width:90%;
+            border-radius:12px;
+        }
+
+        /* ----------------------------------
+         FLOAT BUTTONS (WhatsApp + Review)
+        ---------------------------------- */
+        .whatsapp-float,.review-float{
+            position:fixed;
+            width:60px;
+            height:60px;
+            border-radius:50%;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            color:white;
+            font-size:32px;
+            box-shadow:0 5px 12px rgba(0,0,0,.3);
+            z-index:100;
+            cursor:pointer;
+        }
+
+        .review-popup{
+            position:fixed;
+            inset:0;
+            background:rgba(0,0,0,.75);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            z-index:200;
+            visibility:hidden;
+            opacity:0;
+            transition:.3s;
+        }
+
+        .review-popup.active{
+            visibility:visible;
+            opacity:1;
+        }
+
+        .review-box{
+            background:white;
+            padding:25px;
+            border-radius:18px;
+            width:90%;
+            max-width:420px;
+            text-align:center;
+        }
+
+        .review-box input,
+        .review-box textarea,
+        .review-box select{
+            width:100%;
+            padding:8px;
+            margin-top:8px;
+            border-radius:8px;
+            border:1px solid #ccc;
+        }
+        .overlay{
+            position:absolute;
+            inset:0;
+            background:rgba(0,0,0,.65);
+            color:#fff;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            font-size:18px;
+            font-weight:600;
+            opacity:0;
+            transition:.3s;
+            border-radius:14px;
+            pointer-events:none;      /* 👈 THIS FIXES FLICKER */
+        }
+
+        .card:hover .overlay{
+            opacity:1;
+        }
+
+
+        .whatsapp-float{bottom:20px;right:20px;background:#25d366;}
+        .review-float{bottom:95px;right:20px;background:#ff9f43;}
+
+        /* ----------------------------------
+         MOBILE RESPONSIVE FIXES
+        ---------------------------------- */
+        @media(max-width:800px){
+            .about-box{flex-direction:column;text-align:center;}
+            .hero{height:420px;}
+        }
+        /* Hide scroll arrows on mobile (swipe instead) */
+        @media(max-width:700px){
+            .scroll-btn{ display:none; }
+        }
+        @media(max-width:700px){
+            .hero{
+                height:320px;
+                margin:10px;
+                border-radius:12px;
+            }
+        }
+        @media(max-width:700px){
+            header{
+                padding:10px 16px;
+            }
+            .logo{ font-size:26px; }
+            nav a{ margin-left:10px; font-size:14px; }
+        }
+
+
+    </style>
+</head>
+
+
+<body>
+
+<header>
+    <div class="logo">Dory's Bakehouse</div>
+    <nav>
+        <a href="#">Home</a>
+        <a href="#products">Products</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#reviews">Reviews</a>
+    </nav>
+</header>
+
+<section>
+    <div class="hero"></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+    <div class="about-box">
+        <div class="about-left">
+            <h2 id="aTitle"></h2>
+            <p id="aDesc1"></p>
+            <p id="aDesc2"></p>
+        </div>
+        <div class="about-right">
+            <img src="./dorys.png"/>
+        </div>
+    </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+    <h2>Our Products</h2>
+
+    <div class="dots" id="dots"></div>
+
+    <div class="product-wrapper">
+        <button class="scroll-btn left" onclick="scrollLeft()">❮</button>
+        <div class="products" id="productList"></div>
+        <button class="scroll-btn right" onclick="scrollRight()">❯</button>
+    </div>
+</section>
+
+<!-- GALLERY -->
+<section id="gallery">
+    <h2>Cake Gallery</h2>
+    <div class="gallery" id="galleryBox"></div>
+    <p id="noImages" style="text-align:center;display:none;color:#777">
+        Images yet to come..
+    </p>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+    <h2>What Customers Say</h2>
+    <div class="review-container"></div>
+</section>
+
+<footer>
+    © 2025 Dory's Bakehouse — Made with Love 💖
+</footer>
+
+<!-- Floating Buttons -->
+<a href="https://wa.me/919999999999" class="whatsapp-float" target="_blank">💬</a>
+<a class="review-float" onclick="openReviewPopup()">+</a>
+
+<!-- Image Popup -->
+<div class="image-popup" id="popup">
+    <img id="popupImg">
+</div>
+
+<script>
+
+    const galleryBox = document.getElementById("galleryBox");
+    const dots = document.getElementById("dots");
+
+
+    /* ================= GLOBAL API BASE ================= */
+    const API = window.location.origin;
+
+    /* ================= ABOUT ================= */
+    async function loadAbout(){
+        const r = await fetch(`${API}/api/about`);
+        const a = await r.json();
+        aTitle.innerText = a.title;
+        aDesc1.innerText = a.description;
+        aDesc2.innerText = a.description2;
+    }
+
+    /* ================= PRODUCTS ================= */
+    const productList = document.getElementById("productList");
+
+    /* ================= PRODUCTS ================= */
+    async function loadProducts(){
+        const r = await fetch(`${API}/api/products`);
+        const products = await r.json();
+
+        productList.innerHTML = "";
+
+        products.forEach(p=>{
+            const img = p.imageUrl
+                ? API + (p.imageUrl.startsWith("/")?p.imageUrl:`/${p.imageUrl}`)
+                : "https://via.placeholder.com/300x220";
+
+            productList.innerHTML += `
+<div class="card" onclick="enquire('${p.name}')">
+    <img src="${img}">
+    <div class="overlay">Enquire Now</div>
+    <h3>${p.name}</h3>
+    <p>₹${p.price||""}</p>
+    <p>${p.description||""}</p>
+</div>`;
+        });
+
+        updateDots();
+    }
+
+
+    /* Scroll Buttons */
+    function scrollRight(){ productList.scrollBy({ left: 320, behavior:"smooth" }); }
+    function scrollLeft(){ productList.scrollBy({ left:-320, behavior:"smooth" }); }
+
+    /* Dot Indicators */
+    function updateDots(){
+        const cards = document.querySelectorAll(".card");
+        dots.innerHTML="";
+        cards.forEach((_,i)=>{
+            const dot=document.createElement("span");
+            if(i===0) dot.classList.add("active");
+            dots.appendChild(dot);
+        });
+    }
+
+    /* ================= GALLERY ================= */
+    async function loadGallery(){
+        const r = await fetch(`${API}/api/gallery`);
+        const data = await r.json();
+        galleryBox.innerHTML="";
+
+        if(!data.length){
+            noImages.style.display="block";
+            return;
+        }
+
+        data.forEach(g=>{
+            const img = API + (g.url.startsWith("/")?g.url:`/${g.url}`);
+            galleryBox.innerHTML+=`<img src="${img}" onclick="showImg('${img}')">`;
+        });
+    }
+
+    /* ================= REVIEWS ================= */
+    async function loadReviews(){
+        const r = await fetch(`${API}/api/reviews`);
+        const data = await r.json();
+        const box=document.querySelector(".review-container");
+        box.innerHTML="";
+        data.forEach(r=>{
+            box.innerHTML+=`
+<div class="review-card">
+<p>"${r.message}"</p>
+<div>${"⭐".repeat(r.rating)}</div>
+<h4>— ${r.name}</h4>
+</div>`;
+        });
+    }
+
+    /* ================= IMAGE POPUP ================= */
+    function showImg(img){
+        popupImg.src=img;
+        popup.classList.add("active");
+    }
+    popup.onclick = ()=> popup.classList.remove("active");
+    /*================= REVIEW POPUP===================*/
+
+    function openReviewPopup(){
+        document.getElementById("reviewPopup").classList.add("active");
+    }
+
+    function closeReviewPopup(){
+        document.getElementById("reviewPopup").classList.remove("active");
+    }
+
+    // TEMP local add (we can connect to backend later)
+    function submitReview(){
+        const name = revName.value;
+        const msg = revMsg.value;
+        const rating = revRating.value;
+
+        if(!name || !msg){
+            alert("Please fill all fields");
+            return;
+        }
+
+        alert("Review Submitted 🎉 (we can save to backend next!)");
+        closeReviewPopup();
+    }
+
+
+    /* ================= INIT LOAD ================= */
+    loadAbout();
+    loadProducts();
+    loadGallery();
+    loadReviews();
+    async function submitReview(){
+        const name = revName.value.trim();
+        const message = revMsg.value.trim();
+        const rating = Number(revRating.value);
+
+        if(!name || !message){
+            alert("Please fill all fields");
+            return;
+        }
+
+        const res = await fetch(`${window.location.origin}/api/reviews`,{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ name, message, rating })
+        });
+
+        if(res.ok){
+            alert("Review Submitted 🎉");
+            closeReviewPopup();
+            loadReviews();   // 🔥 auto refresh
+        }else{
+            alert("Failed to submit review");
+        }
+    }
+
+    function enquire(name){
+        const phone = "919999999999";   // 🔥 replace with your WhatsApp number
+        const msg = `Hi, I would like to enquire about ${name}`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+        window.open(url,"_blank");
+    }
+
+</script>
+<!-- REVIEW POPUP -->
+<div class="review-popup" id="reviewPopup">
+    <div class="review-box">
+
+        <h2>Add Your Review ⭐</h2>
+
+        <input type="text" id="revName" placeholder="Your Name"/>
+
+        <select id="revRating">
+            <option value="5">⭐⭐⭐⭐⭐</option>
+            <option value="4">⭐⭐⭐⭐</option>
+            <option value="3">⭐⭐⭐</option>
+            <option value="2">⭐⭐</option>
+            <option value="1">⭐</option>
+        </select>
+
+        <textarea id="revMsg" placeholder="Write your review..."></textarea>
+
+        <button onclick="submitReview()">Submit</button>
+        <button class="close-btn" onclick="closeReviewPopup()">Cancel</button>
+
+    </div>
+</div>
+
+
+</body>
+</html>
