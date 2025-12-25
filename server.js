@@ -224,6 +224,14 @@ app.post("/api/reviews", (req, res) => {
     res.json({ success: true, review });
 });
 
+/* ==========DELETE REVIEW=============================*/
+app.delete("/api/reviews/:id", (req, res) => {
+    let list = readJSON(REVIEW_JSON);
+    list = list.filter((p) => p.id != req.params.id);
+    writeJSON(REVIEW_JSON, list);
+    res.json({ message: "Review Deleted" });
+});
+
 /* =========================================================
                       ABOUT
 ========================================================= */
@@ -253,6 +261,7 @@ app.post("/api/today", upload.single("image"), (req,res)=>{
     const today = {
         id: Date.now(),
         name: req.body.name,
+        description: req.body.description,
         description: req.body.description,
         imageUrl: req.file.path
     };
